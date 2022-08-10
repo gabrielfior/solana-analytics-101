@@ -42,8 +42,7 @@ pub fn process_instruction(
     let mut greeting_account = GreetingAccount::try_from_slice(&account.data.borrow())?;
     greeting_account.counter += 1;
     greeting_account.serialize(&mut &mut account.data.borrow_mut()[..])?;
-
-    msg!("Greeted {} time(s)!", greeting_account.counter);
+    msg!("Greeted {} time(s)! Account {:?}", greeting_account.counter, account);
 
     Ok(())
 }

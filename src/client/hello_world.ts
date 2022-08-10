@@ -36,6 +36,7 @@ let programId: PublicKey;
  * The public key of the account we are saying hello to
  */
 let greetedPubkey: PublicKey;
+let anotherGreetedPubkey: PublicKey;
 
 /**
  * Path to program files
@@ -138,6 +139,7 @@ export async function checkProgram(): Promise<void> {
   try {
     const programKeypair = await createKeypairFromFile(PROGRAM_KEYPAIR_PATH);
     programId = programKeypair.publicKey;
+    console.log(`programId ${programId}`);
   } catch (err) {
     const errMsg = (err as Error).message;
     throw new Error(
@@ -168,6 +170,14 @@ export async function checkProgram(): Promise<void> {
     programId,
   );
 
+  // Derive new account to be greeted
+  const ANOTHER_GREETING_SEED = 'hello_hello';
+  anotherGreetedPubkey = await PublicKey.createWithSeed(
+    payer.publicKey,
+    ANOTHER_GREETING_SEED,
+    programId,
+  );
+
   // Check if the greeting account has already been created
   const greetedAccount = await connection.getAccountInfo(greetedPubkey);
   if (greetedAccount === null) {
@@ -193,7 +203,52 @@ export async function checkProgram(): Promise<void> {
     );
     await sendAndConfirmTransaction(connection, transaction, [payer]);
   }
+
+  // Check if the other greeting account has already been created
+  const anotherGreetedAccount = await connection.getAccountInfo(anotherGreetedPubkey);
+  if (anotherGreetedAccount === null) {
+    console.log(
+      'Creating account',
+      anotherGreetedPubkey.toBase58(),
+      'to say hello to',
+    );
+    const lamports = await connection.getMinimumBalanceForRentExemption(
+      GREETING_SIZE,
+    );
+
+    const anotherTransaction = new Transaction().add(
+      SystemProgram.createAccountWithSeed({
+        fromPubkey: payer.publicKey,
+        basePubkey: payer.publicKey,
+        seed: ANOTHER_GREETING_SEED,
+        newAccountPubkey: anotherGreetedPubkey,
+        lamports,
+        space: GREETING_SIZE,
+        programId,
+      }),
+    );
+    await sendAndConfirmTransaction(connection, anotherTransaction, [payer]);
+  }
+
 }
+
+/**
+ * Say hello to another account
+ */
+ export async function sayHelloToAnotherAccount(): Promise<void> {
+  console.log('Saying hello to', anotherGreetedPubkey.toBase58());
+  const instruction = new TransactionInstruction({
+    keys: [{pubkey: anotherGreetedPubkey, isSigner: false, isWritable: true}],
+    programId,
+    data: Buffer.alloc(0), // All instructions are hellos
+  });
+  await sendAndConfirmTransaction(
+    connection,
+    new Transaction().add(instruction),
+    [payer],
+  );
+}
+
 
 /**
  * Say hello

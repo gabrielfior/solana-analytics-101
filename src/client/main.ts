@@ -8,6 +8,7 @@ import {
   checkProgram,
   sayHello,
   reportGreetings,
+  sayHelloToAnotherAccount,
 } from './hello_world';
 
 async function main() {
@@ -24,6 +25,9 @@ async function main() {
 
   // Say hello to an account
   await sayHello();
+
+  // Say hello to another account
+  await sayHelloToAnotherAccount();
 
   // Find out how many times that account has been greeted
   await reportGreetings();
