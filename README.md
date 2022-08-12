@@ -79,3 +79,4 @@ Feel free to check out this [notebook](tools-overview.ipynb) for some suggestion
 ==================================================================
 
 Thanks to https://kirima.vercel.app/post/gentleintrosolana for an excellent head start.
+Another source for this tutorial was the solana-py documentation (https://michaelhly.github.io/solana-py/).
